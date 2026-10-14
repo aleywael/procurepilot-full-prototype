@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProcurePilot</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">PP</div>
+      <div><div class="brand-name">ProcurePilot</div><div class="brand-sub">Decision Intelligence</div></div>
+    </div>
+    <nav id="nav">
+      <button class="nav-item active" data-page="overview">Overview</button>
+      <button class="nav-item" data-page="import">Import & Readiness</button>
+      <button class="nav-item" data-page="issues">Priority Issues</button>
+      <button class="nav-item" data-page="risk">Predictive Risk</button>
+      <button class="nav-item" data-page="suppliers">Suppliers</button>
+      <button class="nav-item" data-page="scenario">What-if Simulator</button>
+      <button class="nav-item" data-page="copilot">AI Copilot</button>
+      <button class="nav-item" data-page="decisions">Decisions & Outcomes</button>
+      <button class="nav-item" data-page="builder">Dashboard Builder</button>
+      <button class="nav-item" data-page="admin">Admin & Audit</button>
+    </nav>
+    <div class="side-note">Prototype mode<br><span>Human decision always required</span></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1 id="pageTitle">Overview</h1>
+        <p id="pageSubtitle">What needs attention, what may happen next, and what decisions need review.</p>
+      </div>
+      <div class="top-actions">
+        <span class="pill" id="datasetBadge">Seed dataset</span>
+        <button class="btn secondary" id="resetBtn">Reset demo</button>
+      </div>
+    </header>
+
+    <section class="page active" id="page-overview">
+      <div class="kpi-grid" id="dashboardWidgets"></div>
+      <div class="two-col">
+        <div class="card">
+          <div class="section-title">Analysis readiness</div>
+          <div class="section-sub">Can the current data support each analysis?</div>
+          <div id="readinessList" class="stack"></div>
+        </div>
+        <div class="card">
+          <div class="section-title">What changed since last upload</div>
+          <div class="section-sub">New, persistent, improving and resolved issues.</div>
+          <div id="changeCards" class="change-grid"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="row between wrap">
+          <div><div class="section-title">Priority exception inbox</div><div class="section-sub">Start here instead of searching across dashboards.</div></div>
+          <button class="btn" id="openTopIssue">Open top issue</button>
+        </div>
+        <div id="priorityList" class="stack top-gap"></div>
+      </div>
+      <div class="card">
+        <div class="section-title">Decision reviews due</div>
+        <div id="overviewDecisionReviews" class="stack top-gap"></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-import">
+      <div class="two-col">
+        <div class="card">
+          <div class="section-title">Upload procurement data</div>
+          <div class="section-sub">CSV prototype import. XLSX can be connected in the production build.</div>
+          <label class="file-drop" for="csvFile">
+            <input id="csvFile" type="file" accept=".csv">
+            <strong>Choose CSV file</strong>
+            <span>Use sample_baseline.csv or sample_followup.csv included in the project.</span>
+          </label>
+          <div class="row wrap top-gap">
+            <button class="btn" id="loadBaseline">Load sample baseline</button>
+            <button class="btn secondary" id="loadFollowup">Load sample follow-up</button>
+          </div>
+          <div id="importMessage" class="message top-gap">No new file processed yet.</div>
+        </div>
+        <div class="card">
+          <div class="section-title">Smart field mapping</div>
+          <div class="section-sub">ProcurePilot maps source columns to its canonical procurement fields.</div>
+          <div id="mappingTable"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title">Data quality checks</div>
+        <div id="qualityChecks" class="check-grid top-gap"></div>
+      </div>
+      <div class="card">
+        <div class="section-title">KPI-specific analysis readiness</div>
+        <div id="readinessDetail" class="stack top-gap"></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-issues">
+      <div class="card">
+        <div class="section-title">Priority issues</div>
+        <div class="section-sub">Current issues ranked by severity, exposure and evidence.</div>
+        <div id="issuesList" class="stack top-gap"></div>
+      </div>
+      <div class="card" id="evidenceCard">
+        <div class="row between wrap">
+          <div><div class="section-title">Evidence Packet</div><div class="section-sub" id="evidenceSubtitle">Select an issue to inspect the exact evidence.</div></div>
+          <span class="pill" id="evidenceSeverity">—</span>
+        </div>
+        <div id="evidenceBody" class="top-gap empty-state">No issue selected.</div>
+      </div>
+    </section>
+
+    <section class="page" id="page-risk">
+      <div class="two-col">
+        <div class="card">
+          <div class="section-title">Predictive Supplier / PO Risk</div>
+          <div class="section-sub">Prototype model estimates future late-delivery risk from historical evidence.</div>
+          <div id="riskLeaderboard" class="stack top-gap"></div>
+        </div>
+        <div class="card">
+          <div class="section-title">Selected risk explanation</div>
+          <div id="riskExplain" class="empty-state top-gap">Select a supplier.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title">Decision Reliability Score</div>
+        <div class="section-sub">How much weight should the employee give the recommendation?</div>
+        <div id="reliabilityPanel" class="top-gap"></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-suppliers">
+      <div class="card">
+        <div class="row between wrap">
+          <div><div class="section-title">Supplier performance & comparison</div><div class="section-sub">Delivery, quality, price, exposure and predictive risk.</div></div>
+          <select id="supplierSort" class="select">
+            <option value="risk">Sort by predicted risk</option>
+            <option value="otd">Sort by OTD</option>
+            <option value="spend">Sort by spend</option>
+          </select>
+        </div>
+        <div class="table-wrap top-gap"><table><thead><tr><th>Supplier</th><th>OTD</th><th>Avg delay</th><th>Quality</th><th>Spend</th><th>Overdue</th><th>Predicted risk</th></tr></thead><tbody id="supplierRows"></tbody></table></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-scenario">
+      <div class="two-col">
+        <div class="card">
+          <div class="section-title">What-if supplier allocation</div>
+          <div class="section-sub">Test a decision before acting.</div>
+          <label class="field">Primary supplier<select id="scenarioFrom" class="select"></select></label>
+          <label class="field">Alternative supplier<select id="scenarioTo" class="select"></select></label>
+          <label class="field">Move volume <strong id="shareLabel">20%</strong><input id="scenarioShare" type="range" min="0" max="50" value="20" step="5"></label>
+          <button class="btn top-gap" id="runScenario">Run scenario</button>
+          <div class="message top-gap">Illustrative estimate based on historical supplier performance; not a guaranteed prediction.</div>
+        </div>
+        <div class="card">
+          <div class="section-title">Scenario result</div>
+          <div id="scenarioResult" class="top-gap"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-copilot">
+      <div class="two-col">
+        <div class="card chat-card">
+          <div class="section-title">Procurement AI Copilot</div>
+          <div class="section-sub">Evidence-grounded prototype assistant.</div>
+          <div id="chatMessages" class="chat-messages"></div>
+          <form id="chatForm" class="chat-form">
+            <input id="chatInput" placeholder="Ask about suppliers, risk, POs or recommendations..." autocomplete="off">
+            <button class="btn" type="submit">Ask</button>
+          </form>
+        </div>
+        <div class="card">
+          <div class="section-title">Try these questions</div>
+          <div class="quick-list top-gap">
+            <button class="quick-q">Which supplier has the worst OTD?</button>
+            <button class="quick-q">Which supplier should I investigate first?</button>
+            <button class="quick-q">Why is Gamma Metals high risk?</button>
+            <button class="quick-q">What should I do about Gamma Metals?</button>
+            <button class="quick-q">Why exactly did Gamma Metals deliver late?</button>
+            <button class="quick-q">Compare Gamma Metals and Beta Industrial.</button>
+          </div>
+          <div class="message top-gap"><strong>AI boundary:</strong> the Copilot may explain verified evidence and suggest actions, but it must not invent KPI values, claim unsupported root causes, approve POs or replace the employee.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-decisions">
+      <div class="two-col">
+        <div class="card">
+          <div class="section-title">Decision Journal</div>
+          <label class="field">Issue<select id="decisionIssue" class="select"></select></label>
+          <label class="field">Owner<input id="decisionOwner" value="Procurement Analyst"></label>
+          <label class="field">Decision<textarea id="decisionText" rows="4" placeholder="Record the final human decision..."></textarea></label>
+          <label class="field">Rationale<textarea id="decisionRationale" rows="3" placeholder="Why was this decision made?"></textarea></label>
+          <div class="two-col compact">
+            <label class="field">Target KPI<select id="decisionKpi" class="select"><option value="OTD">OTD</option><option value="Overdue">Overdue open POs</option><option value="Quality">Quality rejection</option></select></label>
+            <label class="field">Target value<input id="decisionTarget" type="number" value="82"></label>
+          </div>
+          <label class="field">Review date<input id="decisionDate" type="date"></label>
+          <button class="btn top-gap" id="saveDecision">Save decision</button>
+          <div id="decisionMessage" class="message top-gap">Human approval required. ProcurePilot does not execute supplier changes.</div>
+        </div>
+        <div class="card">
+          <div class="section-title">Decision history & outcomes</div>
+          <div id="decisionHistory" class="stack top-gap"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title">Decision Memory Matching</div>
+        <div id="decisionMemory" class="stack top-gap"></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-builder">
+      <div class="two-col">
+        <div class="card">
+          <div class="section-title">Personalized Dashboard Builder</div>
+          <div class="section-sub">Choose what you want on the Overview page.</div>
+          <div id="builderChecks" class="check-list top-gap"></div>
+          <button class="btn top-gap" id="saveDashboard">Apply dashboard</button>
+          <div class="message top-gap">Critical Priority Issues cannot be hidden completely.</div>
+        </div>
+        <div class="card">
+          <div class="section-title">Example role presets</div>
+          <div class="stack top-gap">
+            <button class="preset" data-preset="analyst"><strong>Procurement Analyst</strong><span>OTD, overdue POs, quality, predictive risk, readiness and changes.</span></button>
+            <button class="preset" data-preset="manager"><strong>Procurement Manager</strong><span>OTD, exposure, high-risk suppliers, major exceptions and decision reviews.</span></button>
+            <button class="preset" data-preset="quality"><strong>Quality-focused view</strong><span>Quality rejection, supplier comparison, exceptions and readiness.</span></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-admin">
+      <div class="two-col">
+        <div class="card">
+          <div class="section-title">Rule management</div>
+          <div class="stack top-gap">
+            <div class="rule-row"><span>OTD deterioration alert</span><strong>&gt; 15 pts</strong></div>
+            <div class="rule-row"><span>Supplier OTD threshold</span><strong>&lt; 80%</strong></div>
+            <div class="rule-row"><span>High predictive risk</span><strong>≥ 65%</strong></div>
+            <div class="rule-row"><span>Quality rejection alert</span><strong>&gt; 5%</strong></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="section-title">Audit activity</div>
+          <div id="auditLog" class="stack top-gap"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
